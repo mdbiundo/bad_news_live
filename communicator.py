@@ -2,13 +2,8 @@ import random
 import jinja2
 from paramiko import SSHClient
 from scp import SCPClient
-
-
-PATH_TO_PLAYER_INTERFACE_HTML_FILE = '/Users/jamesryan/Downloads/player_interface.html'
-PATH_TO_ACTOR_INTERFACE_HTML_FILE = '/Users/jamesryan/Downloads/actor_interface.html'
-
-ZZZ = open('/Users/jamesryan/Downloads/zzz.txt').readline().capitalize()
-
+from flask import jsonify
+import requests
 
 class Communicator(object):
     """A helper class that sends mediates communication between the simulation and
@@ -32,41 +27,33 @@ class Communicator(object):
         self.matches_listing = ''  # Listing of individual matches
         # Special attributes that are set as needed due to computational intensity
         self.interlocutor_source_distribution = []  # What sources fed interlocutor their info about subject
-        # Load templates
-        template_loader = jinja2.FileSystemLoader(searchpath="./templates")
-        template_env = jinja2.Environment(loader=template_loader)
-        self.player_template = template_env.get_template('player.html')
-        self.actor_template = template_env.get_template('actor.html')
 
+
+    def serialize(self):
+        return {
+            'game': self.game,
+            'player': self.player,
+            'current_logo_src': self.current_logo_src,
+            'current_logo_height': self.current_logo_height,
+            'player_exposition': self.player_exposition,
+            'player_exposition_enumeration': self.player_exposition_enumeration,
+            'matches_overview': self.matches_overview,
+            'matches_listing': self.matches_listing,
+            'interlocutor_source_distribution': self.interlocutor_source_distribution
+        }
+        
+        
+    def update_interface(self):
+        requests.post('http://localhost:3000/update', data = jsonify(self.serialize()))
+        
+        
     def update_player_interface(self):
-        """Update the player interface by re-writing its HTML file."""
-        # Fill in the template
-        rendered_player_template = self.player_template.render(communicator=self)
-        # Write that out as a local file
-        f = open(PATH_TO_PLAYER_INTERFACE_HTML_FILE, 'w')
-        f.write(rendered_player_template)
-        f.close()
-        # SCP that local file so that it is web-facing from my BSOE account
-        ssh = SSHClient()
-        ssh.load_system_host_keys()
-        ssh.connect(hostname='riverdance.soe.ucsc.edu', username='jor', password=ZZZ)
-        scp = SCPClient(ssh.get_transport())
-        scp.put(PATH_TO_PLAYER_INTERFACE_HTML_FILE, '~/.html/bad_news/player.html')
-
+        """Wanted to make sure I didn't miss any changes to these calls, so I just redirect them to the new version""""
+        self.update_interface()
+        
     def update_actor_interface(self):
-        """Update the actor interface by re-writing its HTML file."""
-        # Fill in the template
-        rendered_actor_template = self.actor_template.render(communicator=self)
-        # Write that out as a local file
-        f = open(PATH_TO_ACTOR_INTERFACE_HTML_FILE, 'w')
-        f.write(rendered_actor_template)
-        f.close()
-        # SCP that local file so that it is web-facing from my BSOE account
-        ssh = SSHClient()
-        ssh.load_system_host_keys()
-        ssh.connect(hostname='riverdance.soe.ucsc.edu', username='jor', password=ZZZ)
-        scp = SCPClient(ssh.get_transport())
-        scp.put(PATH_TO_ACTOR_INTERFACE_HTML_FILE, '~/.html/bad_news/actor.html')
+        """see above"""
+        self.update_interface()
 
     def speak_directly_to_player(self, exposition):
         """Manually edit the player interface and display that text."""
