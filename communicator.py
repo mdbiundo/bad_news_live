@@ -2,8 +2,8 @@ import random
 import jinja2
 from paramiko import SSHClient
 from scp import SCPClient
-from flask import Flask, jsonify
 import requests
+import json
 
 class Communicator(object):
     """A helper class that sends mediates communication between the simulation and
@@ -41,15 +41,13 @@ class Communicator(object):
             'matches_listing': self.matches_listing,
             'interlocutor_source_distribution': self.interlocutor_source_distribution
         }
-        
-    app = Flask(__name__)
-    with app.app_context():
-        def update_interface(self):
-            requests.post('http://localhost:3000/update', data = jsonify(self.serialize()))
+    
+    def update_interface(self):
+        requests.post('http://localhost:3000/update', data = json.dump(self.serialize())
         
         
     def update_player_interface(self):
-        """Wanted to make sure I didn't miss any changes to these calls, so I just redirect them to the new version""""
+        """Wanted to make sure I didn't miss any changes to these calls, so I just redirect them to the new version"""
         self.update_interface()
         
     def update_actor_interface(self):
