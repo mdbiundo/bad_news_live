@@ -2,7 +2,7 @@ import random
 import jinja2
 from paramiko import SSHClient
 from scp import SCPClient
-from flask import jsonify
+from flask import Flask, jsonify
 import requests
 
 class Communicator(object):
@@ -42,9 +42,10 @@ class Communicator(object):
             'interlocutor_source_distribution': self.interlocutor_source_distribution
         }
         
-        
-    def update_interface(self):
-        requests.post('http://localhost:3000/update', data = jsonify(self.serialize()))
+    app = Flask(__name__)
+    with app.app_context():
+        def update_interface(self):
+            requests.post('http://localhost:3000/update', data = jsonify(self.serialize()))
         
         
     def update_player_interface(self):
